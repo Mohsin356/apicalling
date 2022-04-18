@@ -1,40 +1,9 @@
 import 'dart:convert';
-
+import 'package:apicalling/repo.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-Future<Album> fetchAlbum() async {
-  final response = await http.get(Uri.parse('https://jsonplaceholder.typicode.com/albums/1'));
-  if (response.statusCode == 200) {
-    // If the server did return a 200 OK response,
-    // then parse the JSON.
-    return Album.fromJson(jsonDecode(response.body));
-  } else {
-    // If the server did not return a 200 OK response,
-    // then throw an exception.
-    throw Exception('Failed to load album');
-  }
-}
-class Album {
-  final int userId;
-  final int id;
-  final String title;
-
-  const Album({
-    required this.userId,
-    required this.id,
-    required this.title,
-  });
-
-  factory Album.fromJson(Map<String, dynamic> json) {
-    return Album(
-      userId: json['userId'],
-      id: json['id'],
-      title: json['title'],
-    );
-
-  }
-}
+import 'models/post.dart';
 
 void main() => runApp(const MyApp());
 
@@ -46,14 +15,30 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // late Future<Album> futureAlbum;
-
-  @override
+  // var persons;
+  // Future fetchAlbum() async {
+  //   try {
+  //     final response = await http.get(
+  //         Uri.parse('https://jsonplaceholder.typicode.com/posts/1'));
+  //         // Uri.parse('https://jsonplaceholder.typicode.com/albums'));
+  //     print(response.body);
+  //     final _jasonData = jsonDecode(response.body);
+  //     var data = Post.fromJson(_jasonData);
+  //
+  //     print(_jasonData);
+  //     setState((){
+  //       persons=data;
+  //     });
+  //   }
+  //   catch(err){}
+  // }
+@override
   void initState() {
+    // TODO: implement initState
     super.initState();
-    // futureAlbum = fetchAlbum();
+    // fetchAlbum();
+    // callApi();
   }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -65,22 +50,44 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Fetch Data Example'),
         ),
-        body: Center(
-          child: FutureBuilder<Album>(
-            future: fetchAlbum(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Text(snapshot.data!.title);
-              } else if (snapshot.hasError) {
-                return Text('${snapshot.error}');
-              }
+        body:FutureBuilder(
+          future: Repo.fetchAlbum(),
+          builder: (context,projectSnap){
 
-              // By default, show a loading spinner.
-              return const CircularProgressIndicator();
-            },
-          ),
-        ),
+            if (projectSnap.connectionState == ConnectionState.none &&
+                projectSnap.hasData == null) {
+              //print('project snapshot data is: ${projectSnap.data}');
+              return Container();
+            }else{
+              Post data=projectSnap.data as Post;
+              return Text('${data.body}');
+            }
+
+          },
+        )
+          // Text("${persons?.body ?? "hi"}"),
+          // ListView.builder(
+          //     itemCount: persons.length,
+          //     itemBuilder: (context, index) {
+          //       final post= persons[index];
+          //       return Text("Title:\n ${post["title"]}\n");
+          // }),
+
       ),
+
     );
   }
+
+  // void callApi() async{
+  //   // Repo repo=Repo();
+  //   // persons = await Repo.fetchAlbum();
+  //   // setState(() {
+  //   // });
+  //   Repo.fetchAlbum().then((value){
+  //     setState(() {
+  //       print(value.runtimeType);
+  //        persons= value;
+  //     });
+  //   });
+  // }
 }
