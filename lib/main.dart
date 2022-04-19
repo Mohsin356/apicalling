@@ -1,7 +1,7 @@
-import 'dart:convert';
+import 'package:apicalling/models/post.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:apicalling/models/album.dart';
+import 'package:apicalling/repo.dart';
+
 
 void main() => runApp(const MyApp());
 
@@ -13,21 +13,11 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  var peoples;
-  void fetchAlbum() async {
-    try{
-      final response = await http.get(Uri.parse('https://jsonplaceholder.typicode.com/albums/1'));
-      Map<String, dynamic> serverData = jsonDecode(response.body);
-      final jsonData= Album.fromJson(serverData);
-      setState(() {
-        peoples=jsonData;
-      });
-    }catch(err) {}
-  }
+  // late Future<Album> futureAlbum;
+
   @override
   void initState() {
     super.initState();
-    fetchAlbum();
   }
 
   @override
@@ -41,12 +31,35 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Fetch Data Example'),
         ),
-        body:
-
-               Text('title:\n ${peoples.title}\n'),
-
-
+        body: Center(
+            child: FutureBuilder<List<Post>>(
+              future: Repo.fetchAlbum(),
+              builder: (
+                  BuildContext context,
+                  AsyncSnapshot snapshot,
+                  ) {
+                // print(snapshot.connectionState);
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.connectionState == ConnectionState.done) {
+                  if (snapshot.hasError) {
+                    return const Text('Error');
+                  } else if (snapshot.hasData) {
+                  return ListView.builder(itemCount:snapshot.data!.length,itemBuilder: (context, index) {
+                     Post post = snapshot.data![index];
+                    return Text(post.body!);
+                  });
+                  } else {
+                    return const Text('Empty data');
+                  }
+                } else {
+                  return Text('State: ${snapshot.connectionState}');
+                }
+              },
+            )
+        ),
       ),
     );
   }
+
 }

@@ -11,6 +11,7 @@ class Post {
     id = json['id'];
     title = json['title'];
     body = json['body'];
+
   }
 
   Map<String, dynamic> toJson() {
@@ -21,4 +22,5 @@ class Post {
     data['body'] = body;
     return data;
   }
+
 }
